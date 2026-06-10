@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ii-hotspot"
+version = "0.1.0"
+description = "Inflow & infiltration hotspot mapping via physics-residual spatial attribution."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Arun" }]
+keywords = ["sewer", "wastewater", "inflow", "infiltration", "swmm", "knmi", "gwsw", "bro", "geospatial"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Hydrology",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+geo = [
+    "requests>=2.31",
+    "h5py>=3.9",
+    "pyproj>=3.6",
+    "geopandas>=0.14",
+    "shapely>=2.0",
+    "networkx>=3.1",
+    "scikit-learn>=1.3",
+]
+swmm = [
+    "pyswmm>=1.5",
+    "swmm-api>=0.4",
+]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+ii-hotspot = "ii_hotspot.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/YOUR-USERNAME/ii-hotspot"
+Issues = "https://github.com/YOUR-USERNAME/ii-hotspot/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N"]
+# Allow conventional math/graph naming: `X` for design matrices, `G` for graphs.
+ignore = ["N803", "N806"]
