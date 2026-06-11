@@ -47,8 +47,12 @@ same output directories.
   Provided **only** via the `KNMI_API_KEY` environment variable (or a
   secret store that injects it). Never committed, never in TOML configs;
   the manifest redacts it.
-- **GWSW GeoPackage** for the pilot municipality at the path named in the
-  pilot config (download per [data-sources.md](data-sources.md)).
+- **GWSW network** — fetched automatically: when the GeoPackage named in
+  the pilot config is missing, the pipeline downloads the pipes for the
+  configured bounding box from the PDOK national service (open data, no
+  key). To use a richer municipal export instead, place it at the
+  configured path and/or set `gwsw_auto_fetch = false`
+  (see [data-sources.md](data-sources.md)).
 - **Meter flow CSVs** — one per flow meter / pump station, columns:
   - `timestamp`: ISO 8601, any regular interval (resampled to 5 min)
   - `flow_m3`: measured volume per record interval
@@ -122,9 +126,15 @@ proceed past a red bootstrap.
 
 ```bash
 export KNMI_API_KEY=...                        # PowerShell: $env:KNMI_API_KEY="..."
-# 1. GWSW GeoPackage  -> data/<pilot>.gpkg     (docs/data-sources.md)
-# 2. meter flow CSVs  -> data/meters/*.csv     (format in §3)
-# 3. pilot config     -> configs/<pilot>.toml  (copy pilot.example.toml)
+# 1. meter flow CSVs  -> data/meters/*.csv     (format in §3)
+# 2. pilot config     -> configs/<pilot>.toml  (copy pilot.example.toml)
+```
+
+The sewer network downloads itself on first run. To fetch it explicitly
+(e.g. to inspect it in QGIS before running):
+
+```bash
+python -m ii_hotspot --fetch-network --config configs/<pilot>.toml
 ```
 
 ### 6.3 Optional: pre-fetch the rain window
@@ -211,7 +221,11 @@ always a verified, shippable build.
 | --- | --- | --- |
 | selftest gate fails | regression in kernels/Stage A | do not ship; bisect the code change |
 | `KNMI_API_KEY is not set` | missing secret | export the key; check secret store wiring |
-| HTTP 4xx from KNMI | expired/invalid key or dataset rename | renew at the developer portal; check `knmi_dataset` in config |
+| `KNMI request rejected (4xx)` | expired/invalid key or dataset rename | renew the key (signup may require emailing opendata@knmi.nl); check `knmi_dataset` in config |
+| `KNMI unreachable after 3 attempts` | KNMI platform outage | retried automatically; rerun later, the rain cache resumes nothing lost |
+| `pdok: request rejected (4xx)` | wrong collection name or malformed bbox | bbox must be xmin,ymin,xmax,ymax in EPSG:28992 |
+| `pdok: service unreachable` | PDOK outage | retried automatically; rerun later, or supply a manual GeoPackage |
+| `pdok: no beheerleiding features in bbox` | bbox outside the Netherlands or no data shared by that municipality | check the bbox; fall back to a manual municipal export |
 | `no KNMI files found in window` | window ahead of monthly publication lag | move `end` back, or switch to the near-real-time dataset |
 | `cached zone count ... does not match` | GeoPackage changed since cache was built | delete `rain_cache` and refetch |
 | `zoning produced no clusters` | wrong CRS / wrong layer in GeoPackage | inspect with `gpd.read_file`; extend `gwsw.RENAMES` |

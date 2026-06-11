@@ -27,8 +27,11 @@ class Config:
     knmi_dataset: str = "rad_nl25_rac_mfbs_em_5min"
     knmi_version: str = "2.0"
 
-    # GWSW GeoPackage for the pilot municipality.
+    # GWSW GeoPackage for the pilot municipality. When the file is missing
+    # and gwsw_auto_fetch is true, the pipeline downloads it for bbox_rd
+    # from the PDOK national service (open data, no key required).
     gwsw_gpkg: str = "data/stedelijk_water_pilot.gpkg"
+    gwsw_auto_fetch: bool = True
 
     # Unit-hydrograph time constants (hours).
     tau_fast_h: float = 1.0     # direct inflow: lids, cross-connections

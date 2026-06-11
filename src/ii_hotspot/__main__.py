@@ -26,6 +26,11 @@ def main() -> None:
         help="run the publication gate; exit 1 if recovery is below threshold",
     )
     mode.add_argument(
+        "--fetch-network",
+        action="store_true",
+        help="download the GWSW sewer network for the configured bbox from PDOK",
+    )
+    mode.add_argument(
         "--fetch-rain",
         action="store_true",
         help="download and cache the radar rain matrix for the configured window",
@@ -79,13 +84,19 @@ def main() -> None:
             print("SELFTEST FAILED")
             sys.exit(1)
         print("selftest passed")
-    elif args.fetch_rain or args.run:
+    elif args.fetch_network or args.fetch_rain or args.run:
         if not args.config:
-            ap.error("--run and --fetch-rain require --config <pilot.toml>")
+            ap.error(
+                "--run, --fetch-network, and --fetch-rain require --config <pilot.toml>"
+            )
         from .pipeline import load_run_config, network_stage, rain_stage, run_pipeline
 
         run = load_run_config(args.config)
-        if args.fetch_rain:
+        if args.fetch_network:
+            from .pdok import fetch_network_gpkg
+
+            fetch_network_gpkg(run.cfg.bbox_rd, run.cfg.gwsw_gpkg)
+        elif args.fetch_rain:
             net = network_stage(run)
             rain = rain_stage(run, net["centroids"])
             print(f"rain cache ready: {run.rain_cache} ({len(rain)} steps)")

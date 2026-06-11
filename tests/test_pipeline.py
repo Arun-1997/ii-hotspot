@@ -19,6 +19,7 @@ rain_cache = "cache.csv"
 [config]
 bbox_rd = [1, 2, 3, 4]
 gwsw_gpkg = "net.gpkg"
+gwsw_auto_fetch = false
 ridge = 5e-4
 
 [[meters]]
@@ -36,6 +37,7 @@ def test_load_run_config(tmp_path):
     assert run.name == "unit-pilot"
     assert run.cfg.bbox_rd == (1, 2, 3, 4)
     assert run.cfg.ridge == 5e-4
+    assert run.cfg.gwsw_auto_fetch is False
     assert run.cfg.tau_slow_h == 36.0  # untouched default survives
     assert len(run.meters) == 1
     assert run.meters[0].x_rd == 100.0

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import time
 
 import numpy as np
 import pandas as pd
@@ -12,38 +13,60 @@ from .config import Config
 KNMI_BASE = "https://api.dataplatform.knmi.nl/open-data/v1"
 
 
+def _get(
+    url: str,
+    headers: dict | None = None,
+    params: dict | None = None,
+    timeout: int = 60,
+    attempts: int = 3,
+    wait_s: float = 5.0,
+):
+    """GET with retries on transient failures; clear errors otherwise."""
+    import requests  # local import keeps the package importable without it
+
+    for attempt in range(1, attempts + 1):
+        try:
+            r = requests.get(url, headers=headers, params=params, timeout=timeout)
+            if 400 <= r.status_code < 500:
+                raise RuntimeError(
+                    f"KNMI request rejected ({r.status_code}); check KNMI_API_KEY "
+                    "and the dataset name/version in the config"
+                )
+            r.raise_for_status()
+            return r
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
+            if attempt == attempts:
+                raise RuntimeError(
+                    f"KNMI unreachable after {attempts} attempts: {e}"
+                ) from e
+            print(f"knmi: attempt {attempt} failed ({e}); retrying in {wait_s:.0f}s")
+            time.sleep(wait_s)
+    raise AssertionError("unreachable")
+
+
 def list_files(
     cfg: Config,
     max_keys: int = 500,
     start_after: str | None = None,
 ) -> list[str]:
     """List filenames in the configured KNMI dataset (single page)."""
-    import requests  # local import keeps the package importable without it
-
     url = f"{KNMI_BASE}/datasets/{cfg.knmi_dataset}/versions/{cfg.knmi_version}/files"
     params = {"maxKeys": max_keys}
     if start_after:
         params["startAfterFilename"] = start_after
-    r = requests.get(
-        url, headers={"Authorization": cfg.knmi_api_key}, params=params, timeout=60
-    )
-    r.raise_for_status()
+    r = _get(url, headers={"Authorization": cfg.knmi_api_key}, params=params)
     return [f["filename"] for f in r.json().get("files", [])]
 
 
 def download_file(cfg: Config, filename: str, dest_dir: str = "data/radar") -> str:
     """Resolve the temporary download URL for one file and fetch it."""
-    import requests
-
     os.makedirs(dest_dir, exist_ok=True)
     url = (
         f"{KNMI_BASE}/datasets/{cfg.knmi_dataset}/versions/{cfg.knmi_version}"
         f"/files/{filename}/url"
     )
-    r = requests.get(url, headers={"Authorization": cfg.knmi_api_key}, timeout=60)
-    r.raise_for_status()
-    dl = requests.get(r.json()["temporaryDownloadUrl"], timeout=120)
-    dl.raise_for_status()
+    r = _get(url, headers={"Authorization": cfg.knmi_api_key})
+    dl = _get(r.json()["temporaryDownloadUrl"], timeout=120)
     path = os.path.join(dest_dir, filename)
     with open(path, "wb") as fh:
         fh.write(dl.content)
@@ -97,7 +120,7 @@ def build_zone_rain_series(
 ) -> pd.DataFrame:
     """Download a list of radar files and assemble a (time x zone) rain matrix."""
     rows, idx = [], []
-    for fn in filenames:
+    for i, fn in enumerate(filenames, 1):
         path = download_file(cfg, fn)
         rows.append(rain_at_points(path, zone_centroids_rd))
         idx.append(
@@ -105,4 +128,6 @@ def build_zone_rain_series(
                 fn.split("_")[-1].split(".")[0], format="%Y%m%d%H%M", errors="coerce"
             )
         )
+        if i % 500 == 0 or i == len(filenames):
+            print(f"knmi: {i}/{len(filenames)} files")
     return pd.DataFrame(rows, index=idx).sort_index()

@@ -11,8 +11,12 @@ rain_cache = "data/rain_zone_series.csv"
 [config]
 # Pilot bounding box in RD New (EPSG:28992): xmin, ymin, xmax, ymax.
 bbox_rd = [191000, 466000, 199000, 474000]
-# GWSW GeoPackage for the pilot municipality (see docs/data-sources.md).
+# GWSW GeoPackage for the pilot municipality. If the file is missing it
+# is downloaded automatically for bbox_rd from the PDOK national service
+# (open data, no key). Set gwsw_auto_fetch = false to require a manually
+# supplied file instead (see docs/data-sources.md).
 gwsw_gpkg = "data/stedelijk_water_pilot.gpkg"
+gwsw_auto_fetch = true
 # Unit-hydrograph time constants (hours) and Stage A ridge strength --
 # defaults are sensible; tune only with cause.
 tau_fast_h = 1.0

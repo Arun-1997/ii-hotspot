@@ -11,6 +11,7 @@ RENAMES: dict[str, str] = {
     "materiaal": "material",
     "materiaal_leiding": "material",
     "breedte_diameter": "diameter_mm",
+    "breedte_leiding": "diameter_mm",
     "diameter": "diameter_mm",
     "type_stelsel": "system_type",
     "stelseltype": "system_type",
@@ -29,6 +30,8 @@ def load_sewer_network(gpkg_path: str, layer: str | None = None):
     )
     if pipes.crs is None:
         pipes = pipes.set_crs("EPSG:28992")
+    # PDOK serves MultiLineString; build_graph needs single-part coords.
+    pipes = pipes.explode(index_parts=False, ignore_index=True)
     return pipes.to_crs("EPSG:28992")
 
 

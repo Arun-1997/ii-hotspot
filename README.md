@@ -34,7 +34,7 @@ Once that passes, install the geospatial extras and configure real data:
 ```bash
 pip install -e ".[geo]"
 export KNMI_API_KEY=...      # free at developer.dataplatform.knmi.nl
-# place a GWSW GeoPackage at data/stedelijk_water_pilot.gpkg
+# the GWSW sewer network downloads itself from PDOK on first run
 ```
 
 ## Running a pilot end to end
@@ -65,6 +65,8 @@ deliverable contract: `python -m ii_hotspot --demo --out outputs/demo`.
   gauge-adjusted radar product.
 - `ii_hotspot.gwsw` -- GWSW GeoPackage loader, column normalization, and
   directed-graph construction from pipe geometries and invert levels.
+- `ii_hotspot.pdok` -- automated sewer-network download from the PDOK
+  national GWSW service (no key required).
 - `ii_hotspot.bro` -- BRO public REST helpers for groundwater wells, plus
   IDW interpolation of the head field to zone centroids.
 - `ii_hotspot.synthetic` -- the validation harness used by `--demo`.

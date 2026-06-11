@@ -112,6 +112,16 @@ def network_stage(run: RunConfig) -> dict:
 
     from .gwsw import build_graph, load_sewer_network, make_zones
 
+    if not os.path.exists(run.cfg.gwsw_gpkg):
+        if not run.cfg.gwsw_auto_fetch:
+            raise FileNotFoundError(
+                f"{run.cfg.gwsw_gpkg} not found and gwsw_auto_fetch is off"
+            )
+        from .pdok import fetch_network_gpkg
+
+        print("network: GeoPackage missing; fetching from PDOK")
+        fetch_network_gpkg(run.cfg.bbox_rd, run.cfg.gwsw_gpkg)
+
     pipes = load_sewer_network(run.cfg.gwsw_gpkg)
     G = build_graph(pipes)
     nodes = list(G.nodes)

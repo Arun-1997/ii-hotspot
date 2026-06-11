@@ -22,12 +22,18 @@ to the repo; download into `data/` as instructed below.
 
 - **Provider:** Stichting RIONED (national wastewater standard) via
   individual municipalities.
-- **Two access routes:**
+- **Automated (default):** the pipeline downloads pipes for the
+  configured bounding box from the PDOK national OGC API
+  (`https://api.pdok.nl/rioned/beheer-stedelijk-watersystemen-gwsw/ogc/v1`,
+  collection `beheerleiding`; no API key, serves EPSG:28992 natively).
+  This is what `--fetch-network` and `gwsw_auto_fetch` use via
+  `ii_hotspot.pdok`.
+- **Manual alternatives** (for municipalities with richer local exports):
   1. **`apps.gwsw.nl/item_geo`** -- per-municipality GeoPackage / GML
      download with selectable Geo-themes (object groupings).
-  2. **PDOK "Stedelijk Water (Riolering)"** -- aggregated national service,
-     also available as an Atom GeoPackage download.
-- **Format:** GeoPackage (`.gpkg`), GML, or via WFS.
+  2. **PDOK "Stedelijk Water (Riolering)"** -- the same national service
+     as WMS/WFS or Atom GeoPackage download.
+- **Format:** GeoPackage (`.gpkg`), GML, or via WFS/OGC API.
 - **Bonus:** the GWSW server can also export HydX files for hydraulic
   modelling -- a useful starting point for SWMM input generation.
 
