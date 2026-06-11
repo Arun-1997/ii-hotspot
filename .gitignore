@@ -45,14 +45,19 @@ coverage.xml
 # Jupyter
 .ipynb_checkpoints/
 
-# Project data -- never commit raw radar files or sewer GeoPackages
+# Project data -- never commit raw radar files, meter series, or GeoPackages
 data/radar/
+data/meters/
+data/*.csv
 data/*.gpkg
 data/*.hdf5
 data/*.h5
 data/*.zip
 !data/.gitkeep
 !data/README.md
+
+# Pipeline deliverables (versioned on disk, archived elsewhere)
+outputs/
 
 # Local secrets
 .env

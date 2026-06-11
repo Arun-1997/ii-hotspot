@@ -37,6 +37,22 @@ export KNMI_API_KEY=...      # free at developer.dataplatform.knmi.nl
 # place a GWSW GeoPackage at data/stedelijk_water_pilot.gpkg
 ```
 
+## Running a pilot end to end
+
+```bash
+scripts/bootstrap.sh                                   # env + tests + selftest gate
+cp configs/pilot.example.toml configs/mypilot.toml     # edit bbox, gpkg, meters
+python -m ii_hotspot --fetch-rain --config configs/mypilot.toml   # optional pre-fetch
+scripts/run_pipeline.sh configs/mypilot.toml           # gate + pipeline + deliverables
+```
+
+Each run writes a versioned `outputs/<name>-<timestamp>/` directory with
+`hotspots.csv`, `hotspots.geojson`, `report.html`, and an auditable
+`run_manifest.json`. Windows equivalents (`scripts\*.ps1`), a Docker
+image, scheduling, and quality gates are covered in the
+[deployment plan](docs/deployment.md). A zero-data dry run of the same
+deliverable contract: `python -m ii_hotspot --demo --out outputs/demo`.
+
 ## What's in the box
 
 - `ii_hotspot.kernels` -- exponential unit hydrographs and the
@@ -52,6 +68,11 @@ export KNMI_API_KEY=...      # free at developer.dataplatform.knmi.nl
 - `ii_hotspot.bro` -- BRO public REST helpers for groundwater wells, plus
   IDW interpolation of the head field to zone centroids.
 - `ii_hotspot.synthetic` -- the validation harness used by `--demo`.
+- `ii_hotspot.baseline` -- dry-weather baseline and meter residuals.
+- `ii_hotspot.pipeline` -- the batch pipeline: stages, gates, and the
+  `--run` entry point.
+- `ii_hotspot.report` -- deliverable writers (CSV, GeoJSON, HTML report,
+  reproducibility manifest).
 
 ## Documentation
 
@@ -59,12 +80,15 @@ export KNMI_API_KEY=...      # free at developer.dataplatform.knmi.nl
   estimation, and why physics-residual.
 - [`docs/data-sources.md`](docs/data-sources.md) -- exact endpoints,
   dataset names, and licences for KNMI, GWSW, BRO, BGT/BAG.
+- [`docs/deployment.md`](docs/deployment.md) -- the deployment plan:
+  deliverables, runbook, quality gates, scheduling, and rollback.
 
 ## Status
 
-Stage A and the synthetic harness are complete and tested. The Stage B
-regression layer, the SWMM input builder, and the operational dashboard
-are next.
+Stage A, the synthetic harness, and the batch deployment pipeline
+(deliverables, quality gates, scripts, container) are complete and
+tested. The Stage B regression layer, the SWMM input builder, and the
+operational dashboard are next.
 
 ## License
 

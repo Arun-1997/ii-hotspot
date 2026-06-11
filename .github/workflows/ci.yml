@@ -33,3 +33,32 @@ jobs:
 
       - name: Test
         run: pytest --cov=ii_hotspot --cov-report=term-missing
+
+      - name: Selftest gate
+        run: python -m ii_hotspot --selftest
+
+  demo-deliverable:
+    # Staging deploy: every green build publishes a verified demo
+    # deliverable set (same output contract as a real pilot run).
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Build demo deliverables
+        run: python -m ii_hotspot --demo --out outputs/demo
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-deliverables
+          path: outputs/demo/
