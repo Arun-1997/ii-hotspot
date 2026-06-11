@@ -78,6 +78,9 @@ deliverable contract: `python -m ii_hotspot --demo --out outputs/demo`.
 
 ## Documentation
 
+- [`docs/manual.md`](docs/manual.md) -- the complete manual: problem
+  primer, module-by-module code guide, step-by-step execution, and
+  troubleshooting. Start here.
 - [`docs/method.md`](docs/method.md) -- the model, the two-stage
   estimation, and why physics-residual.
 - [`docs/data-sources.md`](docs/data-sources.md) -- exact endpoints,
