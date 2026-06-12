@@ -9,3 +9,5 @@ notebooks
 tests
 docs
 .github
+#Credentials
+knmi_api_key.txt

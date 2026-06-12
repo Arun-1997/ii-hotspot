@@ -36,6 +36,9 @@ htmlcov/
 coverage.xml
 *.cover
 
+#Credentials
+knmi_api_key.txt
+
 # Editors / OS
 .vscode/
 .idea/
