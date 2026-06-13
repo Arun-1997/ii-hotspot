@@ -1,0 +1,41 @@
+# Pilot run configuration. Copy to configs/<municipality>.toml and edit.
+# Used by: python -m ii_hotspot --run --config configs/<municipality>.toml
+
+[run]
+name = "pilot-apeldoorn"          # appears in output dir names and reports
+start = "2024-09-01"              # rain window, inclusive (ISO date)
+end = "2024-12-01"                # rain window, exclusive
+out_root = "outputs"              # each run gets a timestamped subdirectory
+rain_cache = "data/rain_zone_series.csv"
+
+[config]
+# Pilot bounding box in RD New (EPSG:28992): xmin, ymin, xmax, ymax.
+bbox_rd = [191000, 466000, 199000, 474000]
+# GWSW GeoPackage for the pilot municipality. If the file is missing it
+# is downloaded automatically for bbox_rd from the PDOK national service
+# (open data, no key). Set gwsw_auto_fetch = false to require a manually
+# supplied file instead (see docs/data-sources.md).
+gwsw_gpkg = "data/stedelijk_water_pilot.gpkg"
+gwsw_auto_fetch = true
+# Unit-hydrograph time constants (hours) and Stage A ridge strength --
+# defaults are sensible; tune only with cause.
+tau_fast_h = 1.0
+tau_slow_h = 36.0
+ridge = 1e-3
+# knmi_api_key is read from the KNMI_API_KEY environment variable;
+# never put the key in this file.
+
+# One block per flow meter. flow_csv needs columns: timestamp, flow_m3
+# (volume per record interval). x_rd/y_rd locate the meter in the network;
+# the pipeline snaps them to the nearest sewer node.
+[[meters]]
+id = 0
+flow_csv = "data/meters/ps_noord.csv"
+x_rd = 194500.0
+y_rd = 470100.0
+
+[[meters]]
+id = 1
+flow_csv = "data/meters/ps_zuid.csv"
+x_rd = 195200.0
+y_rd = 467800.0
