@@ -11,7 +11,16 @@ to the repo; download into `data/` as instructed below.
   by a few months. Best for training Stage A on past events.
 - **Dataset (near-real-time):** `nl_rdr_data_rtcor_5m` v1.0 -- the
   real-time product, with an archive variant going back to 2018.
-- **Format:** HDF5
+- **Format:** the climatological product is delivered as **one ZIP
+  archive per year** (each containing the year's 5-min HDF5 files), named
+  with a begin and end timestamp, e.g.
+  `RADNL_CLIM_EM_MFBSNL25_05m_20231231T235500_20241231T235500_0002.zip`.
+  The loader selects the archives covering the run window, downloads each,
+  streams out the in-window slots, and deletes the archive. A yearly
+  archive is large (~1-3 GB) and one full archive is fetched even for a
+  few months inside that year. The near-real-time product instead serves
+  one HDF5 file per 5-min slot; the loader auto-detects which format the
+  dataset uses.
 - **Licence:** CC-BY-4.0
 - **API:** `https://api.dataplatform.knmi.nl/open-data/v1`
 - **Auth:** free API key from the

@@ -203,36 +203,18 @@ def rain_stage(run: RunConfig, centroids: np.ndarray) -> pd.DataFrame:
             )
         return rain
 
-    from .knmi import build_zone_rain_series, list_files
+    from .knmi import build_zone_rain_series
 
     if not run.cfg.knmi_api_key:
         raise ValueError("KNMI_API_KEY is not set and no rain cache exists")
-    start = pd.Timestamp(run.start)
-    end = pd.Timestamp(run.end)
 
-    wanted: list[str] = []
-    after: str | None = None
-    while True:
-        page = list_files(run.cfg, start_after=after)
-        if not page:
-            break
-        for fn in page:
-            ts = pd.to_datetime(
-                fn.split("_")[-1].split(".")[0], format="%Y%m%d%H%M", errors="coerce"
-            )
-            if ts is not pd.NaT and start <= ts < end:
-                wanted.append(fn)
-        after = page[-1]
-        last_ts = pd.to_datetime(
-            after.split("_")[-1].split(".")[0], format="%Y%m%d%H%M", errors="coerce"
+    rain = build_zone_rain_series(run.cfg, centroids, run.start, run.end)
+    if rain.empty:
+        raise ValueError(
+            f"no KNMI data found in [{run.start}, {run.end}); the window may "
+            "be ahead of the dataset's monthly publication lag, or the dataset "
+            f"name/version ({run.cfg.knmi_dataset} v{run.cfg.knmi_version}) is wrong"
         )
-        if last_ts is not pd.NaT and last_ts >= end:
-            break
-
-    if not wanted:
-        raise ValueError(f"no KNMI files found in [{run.start}, {run.end})")
-    print(f"rain: downloading {len(wanted)} radar files")
-    rain = build_zone_rain_series(run.cfg, centroids, wanted)
     rain = rain.clip(lower=0.0).fillna(0.0)
     os.makedirs(os.path.dirname(run.rain_cache) or ".", exist_ok=True)
     rain.to_csv(run.rain_cache)

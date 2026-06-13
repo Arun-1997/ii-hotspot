@@ -226,7 +226,8 @@ always a verified, shippable build.
 | `pdok: request rejected (4xx)` | wrong collection name or malformed bbox | bbox must be xmin,ymin,xmax,ymax in EPSG:28992 |
 | `pdok: service unreachable` | PDOK outage | retried automatically; rerun later, or supply a manual GeoPackage |
 | `pdok: no beheerleiding features in bbox` | bbox outside the Netherlands or no data shared by that municipality | check the bbox; fall back to a manual municipal export |
-| `no KNMI files found in window` | window ahead of monthly publication lag | move `end` back, or switch to the near-real-time dataset |
+| `no KNMI data found in window` | window ahead of monthly publication lag | move `end` back, or switch to the near-real-time dataset |
+| rain fetch needs lots of disk | climatological product ships yearly ZIPs (~1-3 GB each) | ensure free space on the `data/` volume; archives are deleted after extraction |
 | `cached zone count ... does not match` | GeoPackage changed since cache was built | delete `rain_cache` and refetch |
 | `zoning produced no clusters` | wrong CRS / wrong layer in GeoPackage | inspect with `gpd.read_file`; extend `gwsw.RENAMES` |
 | `no dry steps in the record` | wet window or too-short record | extend the run window |
