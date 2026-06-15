@@ -46,6 +46,10 @@ dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "ruff>=0.1",
+    # requests is used (and mocked) by the offline HTTP loader tests; it is
+    # otherwise a `geo` dependency. Keep it here so the suite runs under the
+    # light `.[dev]` install used in CI.
+    "requests>=2.31",
 ]
 
 [project.scripts]
