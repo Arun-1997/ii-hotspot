@@ -36,6 +36,12 @@ def main() -> None:
         help="download and cache the radar rain matrix for the configured window",
     )
     mode.add_argument(
+        "--simulate-meters",
+        action="store_true",
+        help="write SYNTHETIC meter CSVs for the configured network + rain "
+        "(integration/demo only -- not measured data)",
+    )
+    mode.add_argument(
         "--run",
         action="store_true",
         help="execute the full pipeline and write deliverables",
@@ -84,10 +90,11 @@ def main() -> None:
             print("SELFTEST FAILED")
             sys.exit(1)
         print("selftest passed")
-    elif args.fetch_network or args.fetch_rain or args.run:
+    elif args.fetch_network or args.fetch_rain or args.simulate_meters or args.run:
         if not args.config:
             ap.error(
-                "--run, --fetch-network, and --fetch-rain require --config <pilot.toml>"
+                "--run, --fetch-network, --fetch-rain, and --simulate-meters "
+                "require --config <pilot.toml>"
             )
         from .pipeline import load_run_config, network_stage, rain_stage, run_pipeline
 
@@ -100,6 +107,16 @@ def main() -> None:
             net = network_stage(run)
             rain = rain_stage(run, net["centroids"])
             print(f"rain cache ready: {run.rain_cache} ({len(rain)} steps)")
+        elif args.simulate_meters:
+            from .simulate import simulate_meter_csvs
+
+            net = network_stage(run)
+            rain = rain_stage(run, net["centroids"])
+            written, info = simulate_meter_csvs(run, rain, net, seed=args.seed)
+            print("WARNING: wrote SYNTHETIC meter data -- not measured telemetry.")
+            print(f"meters: {written}")
+            print(f"injected fast hotspots in zones: {info['hot_fast_zones']}")
+            print(f"injected slow hotspots in zones: {info['hot_slow_zones']}")
         else:
             run_pipeline(run, skip_selftest=args.skip_selftest)
     else:

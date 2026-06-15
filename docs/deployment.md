@@ -176,6 +176,25 @@ This writes the identical deliverable contract (CSV/HTML/manifest) from
 the synthetic harness, with ground-truth columns included for
 verification.
 
+### Real geography, synthetic meters
+
+Meter telemetry is the one input with no public source (it is the
+utility's private data, supplied under a pilot agreement). To complete a
+run on the *real* network and *real* rain before that data exists -- for
+integration testing or a stakeholder demo -- generate synthetic meter
+CSVs that inject known hotspots through the forward model:
+
+```bash
+python -m ii_hotspot --fetch-rain --config configs/<pilot>.toml      # build rain cache
+python -m ii_hotspot --simulate-meters --config configs/<pilot>.toml # write synthetic CSVs
+python -m ii_hotspot --run --config configs/<pilot>.toml             # produce deliverables
+```
+
+The generated CSVs are **synthetic and must never be presented as
+measured data**; the command prints a warning and the injected hotspot
+zones so recovery can be checked. Replace them with real telemetry for an
+operational run.
+
 ## 7. Scheduled operation
 
 The gauge-adjusted radar product (`rad_nl25_rac_mfbs_em_5min`) is
